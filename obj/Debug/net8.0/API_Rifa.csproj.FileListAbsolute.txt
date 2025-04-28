@@ -169,3 +169,7 @@ D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\obj\Debug\net8.0\ref\API_Rifa.dll
 D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\API_Rifa.staticwebassets.runtime.json
 D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\Newtonsoft.Json.dll
 D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\MercadoPago.dll
+D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\obj\Debug\net8.0\API_Rifa.sourcelink.json
+D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\Gma.QrCodeNet.Encoding.dll
+D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\zxing.dll
+D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\QRCoder.dll

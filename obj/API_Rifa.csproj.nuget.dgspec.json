@@ -64,6 +64,14 @@
               "target": "Package",
               "version": "[13.0.3, )"
             },
+            "QRCoder": {
+              "target": "Package",
+              "version": "[1.6.0, )"
+            },
+            "QrCode.Net": {
+              "target": "Package",
+              "version": "[0.4.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.4.0, )"
@@ -71,6 +79,10 @@
             "System.Text.Json": {
               "target": "Package",
               "version": "[9.0.4, )"
+            },
+            "ZXing.Net": {
+              "target": "Package",
+              "version": "[0.16.10, )"
             },
             "mercadopago-sdk": {
               "target": "Package",

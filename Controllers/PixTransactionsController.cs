@@ -3,6 +3,7 @@ using API_Rifa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace RifaApi.Controllers
 {
@@ -21,10 +22,7 @@ namespace RifaApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PixTransaction>>> GetPixTransactions()
         {
-            return await _context.Pix_Transactions
-                .Include(pt => pt.Number_Sold)
-                .Include(pt => pt.User)
-                .ToListAsync();
+            return await _context.Pix_Transactions.ToListAsync();
         }
 
         // GET: api/PixTransactions/5
@@ -32,7 +30,6 @@ namespace RifaApi.Controllers
         public async Task<ActionResult<PixTransaction>> GetPixTransaction(int id)
         {
             var pixTransaction = await _context.Pix_Transactions
-                .Include(p => p.Number_Sold)
                 .Include(p => p.User)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -47,44 +44,82 @@ namespace RifaApi.Controllers
         [HttpPost("checkout")]
         public async Task<IActionResult> Checkout([FromBody] CheckoutRequest request)
         {
+            // 1. Validação dos dados
             if (request == null || request.User == null || string.IsNullOrEmpty(request.User.Whatsapp))
                 return BadRequest("Dados inválidos");
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Whatsapp == request.User.Whatsapp);
+            if (request.Numbers == null || !request.Numbers.Any())
+                return BadRequest("Nenhum número selecionado");
 
-            if (user == null)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                user = new User
+                // 2. Criar/Obter usuário
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Whatsapp == request.User.Whatsapp);
+
+                if (user == null)
                 {
-                    Name = request.User.Name,
-                    Whatsapp = request.User.Whatsapp
+                    user = new User
+                    {
+                        Name = request.User.Name,
+                        Whatsapp = request.User.Whatsapp
+                    };
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+
+                // 3. Criar os números vendidos (com status inicial 'reserved')
+                var numbersSold = new List<NumberSold>();
+                if(request.Numbers != null)
+                {
+                    var numberSold = new NumberSold
+                    {
+                        Numbers = request.Numbers,
+                        RaffleId = request.RaffleId,
+                        UserId = user.Id,
+                        PaymentStatus = "reserved", // Status inicial
+                        Value = request.Price
+                    };
+                    _context.Numbers_Sold.Add(numberSold);
+                    numbersSold.Add(numberSold);
+                    await _context.SaveChangesAsync();
+                }
+                // 4. Criar transação Pix
+                var pixTransaction = new PixTransaction
+                {
+                    Pix_Key = Guid.NewGuid().ToString(),
+                    Value = request.Price,
+                    Status = "pending",
+                    UserId = user.Id,
+                    NumberSoldId = numbersSold.First().Id, // Associa ao primeiro número criado
                 };
-                _context.Users.Add(user);
+
+                _context.Pix_Transactions.Add(pixTransaction);
                 await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                // 5. Retornar resposta
+                return Ok(new
+                {
+                    success = true,
+                    transactionId = pixTransaction.Id,
+                    numbersSoldIds = numbersSold.Select(n => n.Id),
+                    pixCode = pixTransaction.Pix_Key,
+                    paymentStatus = "pending"
+                });
             }
-
-            var transaction = new PixTransaction
+            catch (Exception ex)
             {
-                Pix_Key = Guid.NewGuid().ToString(),
-                Value = request.Price,
-                Status = "aguardando_pagamento",
-                QrCodeUrl = "https://via.placeholder.com/300?text=QR+Code+Pix",
-                UserId = user.Id
-            };
-
-
-
-            _context.Pix_Transactions.Add(transaction);
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                transactionId = transaction.Id,
-                pixCode = transaction.Pix_Key,
-                qrCodeUrl = transaction.QrCodeUrl
-            });
+                await transaction.RollbackAsync();
+                return StatusCode(500, new
+                {
+                    success = false,
+                    error = ex.Message,
+                    message = "Erro ao processar checkout"
+                });
+            }
         }
-
 
         // POST: api/PixTransactions/confirm
         [HttpPost("confirm")]
@@ -111,7 +146,6 @@ namespace RifaApi.Controllers
 
 
             _context.Numbers_Sold.Add(numberSold);
-            transaction.Number_Sold = numberSold;
             transaction.Status = "pago";
 
             // Atualizar a coluna SoldNumbers da rifa (como JSON)
@@ -169,6 +203,63 @@ namespace RifaApi.Controllers
                 return NotFound();
 
             return Ok(new { status = transaction.Status });
+        }
+
+        [HttpPut("update-pix-status/{paymentId}")]
+        public async Task<IActionResult> UpdatePixStatus(int paymentId, [FromBody] UpdatePixStatusRequest request)
+        {
+            try
+            {
+                var transaction = await _context.Pix_Transactions.FirstOrDefaultAsync(p => p.Id == paymentId);
+
+                if (transaction == null)
+                {
+                    return NotFound(new { error = "Transação não encontrada" });
+                }
+
+                var numbersSold = await _context.Numbers_Sold.FirstOrDefaultAsync(p => p.Id == transaction.NumberSoldId);
+
+
+                if (transaction == null)
+                {
+                    return NotFound(new { error = "Transação não encontrada" });
+                }
+
+                // Atualiza a transação Pix
+                transaction.Status = request.Status;
+                transaction.UpdatedAt = DateTime.UtcNow;
+
+                // Atualiza também o NumberSold relacionado
+                if (transaction.NumberSoldId != null)
+                {
+                    numbersSold.PaymentStatus = request.Status == "approved" ? "paid" : "reserved";
+                    numbersSold.UpdatedAt = DateTime.UtcNow;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Status atualizado com sucesso",
+                    transactionId = transaction.Id,
+                    numberSoldId = transaction.NumberSoldId
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
+            }
+        }
+
+        public class UpdatePixStatusRequest
+        {
+            [Required]
+            public string Status { get; set; } // "approved", "pending", "rejected"
+
         }
     }
 }

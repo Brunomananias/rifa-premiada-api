@@ -11,6 +11,8 @@
         public DateTime End_Date { get; set; }
         public string Image_Url { get; set; }
         public string? SoldNumbers { get; set; }
+        public int? DrawnNumber { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 
 }

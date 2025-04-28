@@ -6,19 +6,17 @@ namespace API_Rifa.Models
     {
         public int Id { get; set; }
 
-        [Column("number_sold_id")]
-        public int? Number_Sold_Id { get; set; }
-
-        public NumberSold? Number_Sold { get; set; }
+        [Column("numberSoldId")] // Nome exato da coluna
+        public int? NumberSoldId { get; set; } // Propriedade pode ser null
 
         [Column("pix_key")]
-        public string Pix_Key { get; set; }
+        public string? Pix_Key { get; set; }
 
         [Column("value")]
         public decimal Value { get; set; }
 
         [Column("status")]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [Column("qr_code_url")]
         public string? QrCodeUrl { get; set; }
@@ -27,8 +25,17 @@ namespace API_Rifa.Models
         public int UserId { get; set; }
 
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public User? User { get; set; }
+
+        // Adicione estas propriedades
+        [Column("CreatedAt")]
+        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Column("UpdatedAt")]
+        public DateTime? UpdatedAt { get; set; } // Nullable
     }
+
+
 
 
 
@@ -36,7 +43,8 @@ namespace API_Rifa.Models
     {
         public UserDto User { get; set; }
         public int RaffleId { get; set; }
-        public List<int> Numbers { get; set; }
+        public int number_sold_id { get; set; }
+        public string Numbers { get; set; }
         public decimal Price { get; set; }
     }
 

@@ -13,32 +13,27 @@ namespace API_Rifa.Data
         public DbSet<Raffle> Raffles { get; set; }
         public DbSet<NumberSold> Numbers_Sold { get; set; }
         public DbSet<PixTransaction> Pix_Transactions { get; set; }
-        public DbSet<PixConfig> PixConfigs { get; set; }
-        public DbSet<RifaPixAssociation> RifaPixAssociations { get; set; }
-
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<NumberSold>()
-                .HasMany(ns => ns.Pix_Transactions)
-                .WithOne(pt => pt.Number_Sold)
-                .HasForeignKey(pt => pt.Number_Sold_Id)
-                .OnDelete(DeleteBehavior.Cascade); // <- isso aqui
-            modelBuilder.Entity<RifaPixAssociation>()
-      .HasKey(r => new { r.RaffleId, r.PixConfigId });
+            modelBuilder.Entity<PixTransaction>(entity =>
+            {
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("GETDATE()"); // Valor padrão se necessário
 
-            modelBuilder.Entity<RifaPixAssociation>()
-                .HasOne(r => r.Rifa)
-                .WithMany()
-                .HasForeignKey(r => r.RaffleId);
+                entity.Property(e => e.UpdatedAt)
+                    .IsRequired(false); // Explícito que aceita NULL
+            });
 
-            modelBuilder.Entity<RifaPixAssociation>()
-                .HasOne(r => r.PixConfig)
-                .WithMany()
-                .HasForeignKey(r => r.PixConfigId);
+            modelBuilder.Entity<PixTransaction>()
+          .HasOne(pt => pt.User)
+          .WithMany()  // Supondo que a relação seja de 1 para N
+          .HasForeignKey(pt => pt.UserId);
+            modelBuilder.Entity<PixTransaction>()
+    .Property(pt => pt.NumberSoldId)
+    .HasColumnName("numberSoldId"); // Nome exato da coluna no BD
         }
 
     }

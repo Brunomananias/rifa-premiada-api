@@ -118,5 +118,40 @@ namespace RifaApi.Controllers
         {
             return _context.Users.Any(e => e.Id == id);
         }
+
+        [HttpGet("compradores")]
+        public async Task<ActionResult<IEnumerable<object>>> GetCompradores()
+        {
+            var users = await _context.Users
+                .Include(u => u.NumbersSold)
+                .ToListAsync(); // forçar execução para trabalhar em memória
+
+            var compradores = users
+                .Where(u => u.NumbersSold.Any(ns => ns.PaymentStatus == "paid")) // Só usuários que têm pelo menos 1 pago
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Name,
+                    u.Whatsapp,
+                    QuantidadeNumeros = u.NumbersSold
+                        .Where(ns => ns.PaymentStatus == "paid") // Só pega números pagos
+                        .Sum(ns => string.IsNullOrWhiteSpace(ns.Numbers)
+                            ? 0
+                            : ns.Numbers.Split(',', StringSplitOptions.RemoveEmptyEntries).Length),
+                    TotalPago = u.NumbersSold
+                        .Where(ns => ns.PaymentStatus == "paid") // Só pega valor de números pagos
+                        .Sum(ns => ns.Value),
+                    statusPagamento = "Pago",
+                    DataCadastro = u.Created_At.ToString("dd/MM/yyyy HH:mm")
+                })
+                .ToList();
+
+
+            return Ok(compradores);
+        }
+
+       
+
+
     }
 }

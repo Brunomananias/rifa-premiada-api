@@ -11,10 +11,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("467e9a5a-3dab-44f7-9007-d60bc4ab2435")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("API_Rifa")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e7b8c48e04a86d708fe9b0ebbf1acb76a4101fe7")]
 [assembly: System.Reflection.AssemblyProductAttribute("API_Rifa")]
 [assembly: System.Reflection.AssemblyTitleAttribute("API_Rifa")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

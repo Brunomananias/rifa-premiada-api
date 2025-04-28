@@ -1,6 +1,9 @@
 using API_Rifa.Data;
+using API_Rifa.Extensions;
+using API_Rifa.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using System.Drawing.Printing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Adicionar HttpClient
+builder.Services.AddHttpClient(); // Linha adicionada
+
 // Configurar CORS
 builder.Services.AddCors(options =>
 {
@@ -22,7 +28,9 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+builder.Services.Configure<PaggueSettings>(builder.Configuration.GetSection("PaggueSettings"));
 
+builder.Services.AddProjectServices();
 
 var app = builder.Build();
 
@@ -36,4 +44,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-

@@ -17,6 +17,13 @@ namespace API_Rifa.Models
         [Column("Payment_Status")]
         public string PaymentStatus { get; set; }
 
+        // Adicione estas propriedades
+        [Column("CreatedAt")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Column("UpdatedAt")]
+        public DateTime? UpdatedAt { get; set; } // Nullable pois só será preenchido na atualização
+
         public ICollection<PixTransaction> Pix_Transactions { get; set; }
     }
 

@@ -1,5 +1,6 @@
 ﻿using API_Rifa.Data;
 using API_Rifa.Models;
+using API_Rifa.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,24 +11,61 @@ namespace RifaApi.Controllers
     public class RafflesController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly RaffleService _raffleService;
 
-        public RafflesController(AppDbContext context)
+        public RafflesController(AppDbContext context, RaffleService raffleService)
         {
             _context = context;
+            _raffleService = raffleService;
         }
 
         // GET: api/Raffles
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Raffle>>> GetRaffles()
         {
-            return await _context.Raffles.ToListAsync();
+            var raffles = await _context.Raffles
+                .Select(r => new Raffle
+                {
+                    Id = r.Id,
+                    Title = r.Title,
+                    Description = r.Description,
+                    Price = r.Price,
+                    Total_Numbers = r.Total_Numbers,
+                    Start_Date = r.Start_Date,
+                    End_Date = r.End_Date,
+                    Image_Url = r.Image_Url,
+                    SoldNumbers = string.Join(",", _context.Numbers_Sold
+                        .Where(n => n.RaffleId == r.Id && n.PaymentStatus == "paid")
+                        .Select(n => n.Numbers)
+                        .ToList())
+                })
+                .ToListAsync();
+
+            return raffles;
         }
 
         // GET: api/Raffles/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Raffle>> GetRaffle(int id)
         {
-            var raffle = await _context.Raffles.FindAsync(id);
+            var raffle = await _context.Raffles
+                .Where(r => r.Id == id)
+                .Select(r => new Raffle
+                {
+                    Id = r.Id,
+                    Title = r.Title,
+                    Description = r.Description,
+                    Price = r.Price,
+                    Total_Numbers = r.Total_Numbers,
+                    Start_Date = r.Start_Date,
+                    End_Date = r.End_Date,
+                    Image_Url = r.Image_Url,
+                    SoldNumbers = string.Join(",", _context.Numbers_Sold
+                        .Where(n => n.RaffleId == r.Id && n.PaymentStatus == "paid")
+                        .Select(n => n.Numbers)
+                        .ToList())
+                })
+                .FirstOrDefaultAsync();
 
             if (raffle == null)
             {
@@ -36,6 +74,7 @@ namespace RifaApi.Controllers
 
             return raffle;
         }
+
 
         // POST: api/Raffles
         [HttpPost]
@@ -144,6 +183,17 @@ namespace RifaApi.Controllers
         private bool RaffleExists(int id)
         {
             return _context.Raffles.Any(e => e.Id == id);
+        }
+
+        [HttpPost("{id}/sortear")]
+        public async Task<IActionResult> SortearNumero(int id)
+        {
+            var (numeroSorteado, nomeComprador) = await _raffleService.SortearNumeroAsync(id);
+
+            if (numeroSorteado == null)
+                return NotFound();
+
+            return Ok(new { numeroSorteado, nomeComprador });
         }
     }
 }

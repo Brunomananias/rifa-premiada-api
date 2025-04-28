@@ -1,6 +1,7 @@
 ﻿using API_Rifa.Data;
 using API_Rifa.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace RifaApi.Controllers
@@ -22,6 +23,44 @@ namespace RifaApi.Controllers
         {
             return await _context.Numbers_Sold.ToListAsync();
         }
+
+        [HttpGet("quantity-purchases")]
+        public async Task<long> GetQuantityPurchases()
+        {
+            var totalPaid = await _context.Numbers_Sold
+                .Where(x => x.PaymentStatus == "paid")
+                .CountAsync();
+            return totalPaid;
+        }
+
+        [HttpGet("filtrar-cotas")]
+        public async Task<IActionResult> FiltrarCotas(int rifa, DateTime inicio, DateTime fim)
+        {
+            // Ajustar a data de fim para o final do dia, se necessário
+            fim = fim.Date.AddDays(1).AddMilliseconds(-1);
+
+            // Buscar os registros filtrados pela rifa e pelas datas
+            var numbersSold = await _context.Numbers_Sold
+                .Where(n => n.RaffleId == rifa && n.PaymentStatus == "paid"
+                            && n.CreatedAt >= inicio && n.CreatedAt <= fim)
+                .ToListAsync();
+
+            // Dividir os números da string, converter para inteiros e encontrar o maior e o menor
+            var numbers = numbersSold
+                .SelectMany(n => n.Numbers.Split(',') // Dividir os números por vírgula
+                .Select(num => Convert.ToInt32(num))) // Converter para inteiro
+                .ToList();
+
+            // Encontrar a maior e menor cota usando LINQ
+            var maiorCota = numbers.Any() ? numbers.Max() : 0;
+            var menorCota = numbers.Any() ? numbers.Min() : 0;
+
+            // Retornar os resultados
+            return Ok(new { MaiorCota = maiorCota, MenorCota = menorCota });
+        }
+
+
+
 
         // GET: api/NumbersSold/5
         [HttpGet("{id}")]
@@ -100,5 +139,73 @@ namespace RifaApi.Controllers
         {
             return _context.Numbers_Sold.Any(e => e.Id == id);
         }
+
+        [HttpGet("compras")]
+        public async Task<IActionResult> GetCompras()
+        {
+            var compras = await (from ns in _context.Numbers_Sold
+                                 join u in _context.Users on ns.UserId equals u.Id
+                                 join r in _context.Raffles on ns.RaffleId equals r.Id
+                                 group ns by new
+                                 {
+                                     ns.Id,
+                                     ns.CreatedAt,
+                                     r.Title,
+                                     u.Name,
+                                     u.Whatsapp,
+                                     ns.PaymentStatus,
+                                     ns.Value
+                                 } into g
+                                 select new
+                                 {
+                                     compra_id = g.Key.Id,
+                                     dataUpdated = g.Key.CreatedAt,
+                                     nome_rifa = g.Key.Title,
+                                     nome_usuario = g.Key.Name,
+                                     whatsapp = g.Key.Whatsapp,
+                                     quantidade_numbers = g.Count(),
+                                     totalprice = (g.Count() * g.Key.Value).ToString("F2"),
+                                     payment_status = g.Key.PaymentStatus
+                                 }).OrderByDescending(c => c.dataUpdated).ToListAsync();
+
+            return Ok(compras);
+        }
+
+        [HttpDelete("{id}")]
+
+        public async Task CancelarCompraExpirada(int numberSoldId)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    // Deletar as transações Pix associadas a este número vendido
+                    var pixTransactions = await _context.Pix_Transactions
+                        .Where(pt => pt.NumberSoldId == numberSoldId)
+                        .ToListAsync();
+                    _context.Pix_Transactions.RemoveRange(pixTransactions);
+
+                    // Deletar o número vendido
+                    var numberSold = await _context.Numbers_Sold
+                        .Where(ns => ns.Id == numberSoldId)
+                        .FirstOrDefaultAsync();
+
+                    if (numberSold != null)
+                    {
+                        _context.Numbers_Sold.Remove(numberSold);
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw new Exception("Erro ao cancelar a compra expirada: " + ex.Message);
+                }
+            }
+        }
+
+
     }
 }
