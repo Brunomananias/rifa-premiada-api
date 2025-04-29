@@ -173,3 +173,7 @@ D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\obj\Debug\net8.0\API_Rifa.sourcelink
 D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\Gma.QrCodeNet.Encoding.dll
 D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\zxing.dll
 D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\QRCoder.dll
+D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\BCrypt.Net-Core.dll
+D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\Microsoft.Bcl.Memory.dll
+D:\Projetos\site-rifa-api\API_Rifa\API_Rifa\bin\Debug\net8.0\BouncyCastle.Crypto.dll

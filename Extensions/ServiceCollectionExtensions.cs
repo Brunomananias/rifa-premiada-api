@@ -9,6 +9,7 @@ namespace API_Rifa.Extensions
             services.AddScoped<RaffleService>();
             services.AddScoped<PagguePaymentService>();
             services.AddScoped<TokenService>();
+            services.AddScoped<AuthService>();
         }
     }
 }

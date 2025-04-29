@@ -171,7 +171,7 @@ namespace RifaApi.Controllers
             return Ok(compras);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}/cancel-expirado")]
 
         public async Task CancelarCompraExpirada(int numberSoldId)
         {

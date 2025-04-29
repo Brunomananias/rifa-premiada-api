@@ -13,6 +13,8 @@ namespace API_Rifa.Data
         public DbSet<Raffle> Raffles { get; set; }
         public DbSet<NumberSold> Numbers_Sold { get; set; }
         public DbSet<PixTransaction> Pix_Transactions { get; set; }
+        public DbSet<AdminUser> AdminUsers { get; set; }
+        public DbSet<Plan> Plans { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,6 +28,10 @@ namespace API_Rifa.Data
                 entity.Property(e => e.UpdatedAt)
                     .IsRequired(false); // Explícito que aceita NULL
             });
+
+            modelBuilder.Entity<AdminUser>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
 
             modelBuilder.Entity<PixTransaction>()
           .HasOne(pt => pt.User)
