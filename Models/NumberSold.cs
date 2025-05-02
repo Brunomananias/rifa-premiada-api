@@ -10,7 +10,10 @@ namespace API_Rifa.Models
         public Raffle Raffle { get; set; }
 
         public string Numbers { get; set; } // Ex: "001,002,003"
-        [Column("User_Id")]
+        [Column("customer_id")]
+        public int CustomerId { get; set; }
+
+        [Column("user_id")]
         public int UserId { get; set; }
 
         public decimal Value { get; set; }

@@ -1,4 +1,6 @@
-﻿using API_Rifa.Models;
+﻿using API_Rifa.Data;
+using API_Rifa.Models;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using QRCoder;
 using System.Text;
@@ -8,11 +10,13 @@ namespace API_Rifa.Services
     public class PagguePaymentService
     {
         private readonly HttpClient _httpClient;
+        private readonly AppDbContext _context;
         private readonly TokenService _tokenService;
-        public PagguePaymentService(HttpClient httpClient, TokenService tokenService)
+        public PagguePaymentService(HttpClient httpClient, TokenService tokenService, AppDbContext context)
         {
             _httpClient = httpClient;
             _tokenService = tokenService;
+            _context = context;
         }
 
         public async Task<PaggueResponse> CreatePixPaymentAsync(PaggueRequest request)
@@ -32,13 +36,14 @@ namespace API_Rifa.Services
                     webhook_url = request.Meta.WebhookUrl
                 }
             });
-
+            var raffle = await _context.Raffles
+                .FirstOrDefaultAsync(r => r.Id == request.raffleId);
             var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
+            var companyId = await GetCompanyIdAsync(raffle.user_id);
             // Definindo o cabeçalho de autenticação
-            var token = await _tokenService.ObterTokenAsync();
+            var token = await _tokenService.ObterTokenAsync(raffle.user_id);
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            _httpClient.DefaultRequestHeaders.Add("x-company-id", "172012");
+            _httpClient.DefaultRequestHeaders.Add("x-company-id", companyId);
             var response = await _httpClient.PostAsync(url, content);
 
             if (response.IsSuccessStatusCode)
@@ -55,6 +60,15 @@ namespace API_Rifa.Services
             }
         }
 
+        public async Task<string> GetCompanyIdAsync(int userId)
+        {
+            var settings = await _context.GatewaySettings
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+
+            return settings?.CompanyId; // Retorna o CompanyId associado ao UserId
+        }
+
+
         public string GerarQRCode(string codigoPix)
         {
             var qrGenerator = new QRCodeGenerator();
@@ -66,12 +80,12 @@ namespace API_Rifa.Services
             return Convert.ToBase64String(qrCodeBytes);
         }
 
-        public async Task<PaymentStatusResponse> GetPaymentStatusAsync(string paymentId)
+        public async Task<PaymentStatusResponse> GetPaymentStatusAsync(string paymentId, int userId)
         {
             var url = $"https://ms.paggue.io/cashin/api/billing_order/{paymentId}"; // URL da Paggue para consultar o status
 
             // Definindo cabeçalhos, incluindo o token de autenticação
-            var token = await _tokenService.ObterTokenAsync();
+            var token = await _tokenService.ObterTokenAsync(userId);
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             _httpClient.DefaultRequestHeaders.Add("x-company-id", "172012");
 

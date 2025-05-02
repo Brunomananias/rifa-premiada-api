@@ -21,6 +21,32 @@ namespace RifaApi.Controllers
 
         // GET: api/Raffles
         [HttpGet]
+        public async Task<ActionResult<IEnumerable<Raffle>>> GetRaffles(int idUsuarioLogado)
+        {
+            var raffles = await _context.Raffles
+                .Where(r => r.user_id == idUsuarioLogado)
+                .Select(r => new Raffle
+                {
+                    Id = r.Id,
+                    Title = r.Title,
+                    Description = r.Description,
+                    Price = r.Price,
+                    Total_Numbers = r.Total_Numbers,
+                    Start_Date = r.Start_Date,
+                    End_Date = r.End_Date,
+                    Image_Url = r.Image_Url,
+                    SoldNumbers = string.Join(",", _context.Numbers_Sold
+                        .Where(n => n.RaffleId == r.Id && n.PaymentStatus == "paid")
+                        .Select(n => n.Numbers)
+                        .ToList())
+                })               
+                .ToListAsync();
+
+            return raffles;
+        }
+
+        // GET: api/Raffles
+        [HttpGet("all-raffles")]
         public async Task<ActionResult<IEnumerable<Raffle>>> GetRaffles()
         {
             var raffles = await _context.Raffles
@@ -135,30 +161,32 @@ namespace RifaApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutRaffle(int id, Raffle raffle)
         {
-            if (id != raffle.Id)
+            var existingRaffle = await _context.Raffles.FindAsync(id);
+
+            if (existingRaffle == null)
             {
-                return BadRequest();
+                return NotFound("Rifa não encontrada.");
             }
 
-            _context.Entry(raffle).State = EntityState.Modified;
+            existingRaffle.Title = raffle.Title;
+            existingRaffle.Description = raffle.Description;
+            existingRaffle.Price = raffle.Price;
+            existingRaffle.Total_Numbers = raffle.Total_Numbers;
+            existingRaffle.Start_Date = raffle.Start_Date;
+            existingRaffle.End_Date = raffle.End_Date;
+            existingRaffle.Image_Url = raffle.Image_Url;
+            existingRaffle.UpdatedAt = DateTime.Now;
 
             try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!RaffleExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+    {
+        await _context.SaveChangesAsync();
+    }
+    catch (DbUpdateException ex)
+    {
+        return StatusCode(500, $"Erro ao atualizar rifa: {ex.Message}");
+    }
 
-            return NoContent();
+    return NoContent();
         }
 
         [HttpDelete("{id}")]

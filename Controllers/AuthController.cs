@@ -31,18 +31,36 @@ public class AuthController : ControllerBase
         // Gere o token
         var token = _authService.GenerateJwtToken(user.Id, user.Email);
 
-        return Ok(new { Token = token });
+        return Ok(new
+        {
+            Token = token,
+            User = user.Id,
+            user.Plan_id,
+            PlanName = user.Plano.Name,
+            UserName = user.Name
+        });
+
     }
 
-    [HttpPost("auth/register")]
+    [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegistroRequest request)
     {
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
             return BadRequest("E-mail já cadastrado.");
 
-        var freePlan = await _context.Plans.FirstOrDefaultAsync(p => p.Name == "Plano Free");
-        if (freePlan == null)
-            return StatusCode(500, "Plano Free não configurado.");
+        var plano = await _context.Plans.FirstOrDefaultAsync(p => p.Name == request.PlanName);
+
+        // Se não encontrar, tenta buscar o plano padrão com ID fixo
+        int planoId;
+        if (plano != null)
+        {
+            planoId = plano.Id;
+        }
+        else
+        {
+            var planoPadrao = await _context.Plans.FindAsync(5); // Busca pelo ID
+            planoId = planoPadrao?.Id ?? throw new Exception("Plano padrão com ID 5 não encontrado.");
+        }
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
@@ -55,6 +73,7 @@ public class AuthController : ControllerBase
             Document = request.Document,
             Status = true, 
             Is_Admin = false, 
+            Plan_id = planoId,
             Created_At = DateTime.UtcNow,
             Updated_At = DateTime.UtcNow,
             Last_Login = null
@@ -68,7 +87,10 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             message = "Usuário registrado com sucesso!",
-            token,
+            token,          
+            PlanName = user.Plano.Name,
+            PlanId = user.Plan_id,
+            UserName = user.Name,
             user = new
             {
                 user.Id,
@@ -76,7 +98,7 @@ public class AuthController : ControllerBase
                 user.Email,
                 user.Whatsapp,
                 user.Document,
-                user.Is_Admin
+                user.Is_Admin,
             }
         });
     }

@@ -44,7 +44,9 @@ public class AuthService
     public User? AuthenticateUser(string email, string password)
     {
         // Exemplo com Entity Framework Core:
-        var user = _context.Users.FirstOrDefault(u => u.Email == email);
+        var user = _context.Users
+        .Include(u => u.Plano) // Inclui os dados do plano
+        .FirstOrDefault(u => u.Email == email);
 
         if (user == null)
             return null;

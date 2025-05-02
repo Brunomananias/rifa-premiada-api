@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("API_Rifa")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+663c506aab889dcaaa81e07a801defd0d8c05a76")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97688c8d4cc987eee5619161304eefebc25a7616")]
 [assembly: System.Reflection.AssemblyProductAttribute("API_Rifa")]
 [assembly: System.Reflection.AssemblyTitleAttribute("API_Rifa")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

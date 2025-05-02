@@ -30,7 +30,7 @@ namespace RifaApi.Controllers
         public async Task<ActionResult<PixTransaction>> GetPixTransaction(int id)
         {
             var pixTransaction = await _context.Pix_Transactions
-                .Include(p => p.User)
+                .Include(p => p.Customer)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (pixTransaction == null)
@@ -45,7 +45,7 @@ namespace RifaApi.Controllers
         public async Task<IActionResult> Checkout([FromBody] CheckoutRequest request)
         {
             // 1. Validação dos dados
-            if (request == null || request.User == null || string.IsNullOrEmpty(request.User.Whatsapp))
+            if (request == null || request.Customer == null || string.IsNullOrEmpty(request.Customer.Whatsapp))
                 return BadRequest("Dados inválidos");
 
             if (request.Numbers == null || !request.Numbers.Any())
@@ -54,17 +54,16 @@ namespace RifaApi.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 2. Criar/Obter usuário
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Whatsapp == request.User.Whatsapp);
+                var customer = await _context.Customers.FirstOrDefaultAsync(u => u.Whatsapp == request.Customer.Whatsapp);
 
-                if (user == null)
+                if (customer == null)
                 {
-                    user = new User
+                    customer = new Customer
                     {
-                        Name = request.User.Name,
-                        Whatsapp = request.User.Whatsapp
+                        Name = request.Customer.Name,
+                        Whatsapp = request.Customer.Whatsapp
                     };
-                    _context.Users.Add(user);
+                    _context.Customers.Add(customer);
                     await _context.SaveChangesAsync();
                 }
 
@@ -76,8 +75,8 @@ namespace RifaApi.Controllers
                     {
                         Numbers = request.Numbers,
                         RaffleId = request.RaffleId,
-                        UserId = user.Id,
-                        PaymentStatus = "reserved", // Status inicial
+                        CustomerId = customer.Id,
+                        PaymentStatus = "reserved",
                         Value = request.Price
                     };
                     _context.Numbers_Sold.Add(numberSold);
@@ -90,7 +89,7 @@ namespace RifaApi.Controllers
                     Pix_Key = Guid.NewGuid().ToString(),
                     Value = request.Price,
                     Status = "pending",
-                    UserId = user.Id,
+                    CustomerId = customer.Id,
                     NumberSoldId = numbersSold.First().Id, // Associa ao primeiro número criado
                 };
 
@@ -126,7 +125,7 @@ namespace RifaApi.Controllers
         public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmPaymentRequest request)
         {
             var transaction = await _context.Pix_Transactions
-                .Include(p => p.User)
+                .Include(p => p.Customer)
                 .FirstOrDefaultAsync(p => p.Id == request.TransactionId);
 
             if (transaction == null)
@@ -139,7 +138,7 @@ namespace RifaApi.Controllers
             {
                 RaffleId = request.RaffleId,
                 Numbers = string.Join(",", request.Numbers.Select(n => n.ToString())), // Sem formatação
-                UserId = transaction.UserId,
+                CustomerId = transaction.CustomerId,
                 PaymentStatus = "Pago",
                 Value = transaction.Value
             };
@@ -211,23 +210,23 @@ namespace RifaApi.Controllers
             try
             {
                 var transaction = await _context.Pix_Transactions.FirstOrDefaultAsync(p => p.Id == paymentId);
-
-                if (transaction == null)
-                {
-                    return NotFound(new { error = "Transação não encontrada" });
-                }
-
+                var transactionAdmin = await _context.Pix_TransactionsAdmin.FirstOrDefaultAsync(p => p.Id == paymentId);
                 var numbersSold = await _context.Numbers_Sold.FirstOrDefaultAsync(p => p.Id == transaction.NumberSoldId);
 
 
                 if (transaction == null)
                 {
-                    return NotFound(new { error = "Transação não encontrada" });
+                    transactionAdmin.Status = request.Status;
+                    transactionAdmin.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    transaction.Status = request.Status;
+                    transaction.UpdatedAt = DateTime.UtcNow;
                 }
 
                 // Atualiza a transação Pix
-                transaction.Status = request.Status;
-                transaction.UpdatedAt = DateTime.UtcNow;
+               
 
                 // Atualiza também o NumberSold relacionado
                 if (transaction.NumberSoldId != null)

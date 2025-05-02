@@ -7,6 +7,7 @@
         public string Password { get; set; } = "";
         public string Whatsapp { get; set; } = "";
         public string Document { get; set; } = "";
+        public string PlanName { get; set; } = "";
     }
 
 }

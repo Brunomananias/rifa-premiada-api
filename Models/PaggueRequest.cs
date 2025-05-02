@@ -8,6 +8,7 @@
         public string ExternalId { get; set; }         // ID único do pagamento
         public string Description { get; set; }        // Descrição do pagamento
         public MetaData Meta { get; set; }             // Dados extras e Webhook
+        public int raffleId { get; set; }
     }
     public class MetaData
             {

@@ -1,0 +1,5 @@
+# Ignora o appsettings.json
+appsettings.json
+
+# Ignora os arquivos de configuração de desenvolvimento, como appsettings.Development.json
+appsettings.Development.json

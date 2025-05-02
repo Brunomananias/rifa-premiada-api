@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Numerics;
 
 namespace API_Rifa.Models
 {
@@ -20,14 +21,13 @@ namespace API_Rifa.Models
         [Required]
         public string PasswordHash { get; set; }
 
-        [MaxLength(255)]
-        public string Password { get; set; } = "";
-
         [MaxLength(20)]
         public string Document { get; set; } = "";
 
         public bool Status { get; set; }
         public bool Is_Admin { get; set; }
+
+        public int Plan_id { get; set; }
 
         public DateTime Created_At { get; set; } = DateTime.Now;
 
@@ -37,6 +37,7 @@ namespace API_Rifa.Models
 
         // Relacionamento (ex: numeros vendidos pelo usuário)
         public ICollection<NumberSold> NumbersSold { get; set; }
+        public Plan Plano { get; set; }
     }
 
 }

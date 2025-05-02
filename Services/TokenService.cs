@@ -1,4 +1,6 @@
-﻿using API_Rifa.Models;
+﻿using API_Rifa.Data;
+using API_Rifa.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
@@ -9,60 +11,55 @@ namespace API_Rifa.Services
 {
     public class TokenService
     {
+        private readonly AppDbContext _context;
         private readonly HttpClient _httpClient;
-        private readonly PaggueSettings _settings;
 
-        public TokenService(HttpClient httpClient, IOptions<PaggueSettings> settings)
-            {
-                _httpClient = httpClient;
-                _settings = settings.Value;
+        public TokenService(AppDbContext context, HttpClient httpClient)
+        {
+            _context = context;
+            _httpClient = httpClient;
         }
 
-        public async Task<string> ObterTokenAsync()
+        public async Task<string> ObterTokenAsync(int userId)
         {
-            var url = "https://ms.paggue.io/auth/v1/token"; // URL para obter o token
+            var settings = await _context.GatewaySettings.FirstOrDefaultAsync(g => g.UserId == userId);
 
-            // Dados do corpo da requisição com as credenciais
-            var body = new Dictionary<string, string>
+            if (settings == null || string.IsNullOrEmpty(settings.ClientKey) || string.IsNullOrEmpty(settings.ClientSecret))
             {
-                { "client_key", _settings.ClientKey },
-                { "client_secret", _settings.ClientSecret },
-                { "grant_type", "client_credentials" }
-                };
+                Console.WriteLine("Chaves não encontradas para o usuário.");
+                return null;
+            }
 
-            // Formatação dos dados para enviar no corpo da requisição
+            var url = "https://ms.paggue.io/auth/v1/token";
+
+            var body = new Dictionary<string, string>
+        {
+            { "client_key", settings.ClientKey },
+            { "client_secret", settings.ClientSecret },
+            { "grant_type", "client_credentials" }
+        };
+
             var content = new FormUrlEncodedContent(body);
 
             try
             {
-                // Envia a requisição POST
                 var response = await _httpClient.PostAsync(url, content);
 
-                // Verifica se a requisição foi bem-sucedida
                 if (response.IsSuccessStatusCode)
                 {
                     var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                    // Exibe a resposta para depuração (verifique o JSON completo)
-                    Console.WriteLine("Resposta da API: " + jsonResponse);
-
-                    // Deserializa a resposta JSON
                     dynamic responseData = JsonConvert.DeserializeObject(jsonResponse);
-
-                    // Retorna o token de acesso
                     return responseData.access_token;
                 }
                 else
                 {
-                    // Se a resposta não foi bem-sucedida, exibe o código de status
-                    Console.WriteLine("Erro ao obter o token. Status: " + response.StatusCode);
+                    Console.WriteLine("Erro ao obter token: " + response.StatusCode);
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                // Captura erros e exibe a mensagem
-                Console.WriteLine("Erro ao enviar a requisição: " + ex.Message);
+                Console.WriteLine("Erro ao enviar requisição: " + ex.Message);
                 return null;
             }
         }

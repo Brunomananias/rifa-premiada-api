@@ -2,6 +2,7 @@
 using API_Rifa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Numerics;
 
 namespace RifaApi.Controllers
 {
@@ -150,7 +151,46 @@ namespace RifaApi.Controllers
             return Ok(compradores);
         }
 
-       
+        [HttpGet("user-email")]
+        public async Task<ActionResult<string>> GetUserEmail([FromQuery] int idUser)
+        {
+            var userEmail = await _context.Users
+                .Where(x => x.Id == idUser)
+                .Select(x => x.Email)
+                .FirstOrDefaultAsync(); // já que só retorna 1 e não uma lista
+
+            if (string.IsNullOrEmpty(userEmail))
+                return NotFound("Usuário não encontrado");
+
+            return Ok(userEmail);
+        }
+
+        [HttpPut("plan")]
+        public async Task<IActionResult> UpdateUserPlan([FromBody] UpdateUserPlanRequest request)
+        {
+            var user = await _context.Users.FindAsync(request.UserId);
+
+            if (user == null)
+                return NotFound("Usuário não encontrado");
+
+            user.Plan_id = request.PlanId;
+
+            await _context.SaveChangesAsync();
+
+            // (Opcional) Buscar o nome do plano, se quiser retornar
+            var plan = await _context.Plans.FindAsync(request.PlanId);
+
+            return Ok(new { newPlanId = user.Plan_id, newPlanName = plan?.Name });
+        }
+
+
+        public class UpdateUserPlanRequest
+        {
+            public int UserId { get; set; }
+            public int PlanId { get; set; }
+            public string PlanName { get; set; } // Se necessário
+        }
+
 
 
     }

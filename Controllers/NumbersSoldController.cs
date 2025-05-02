@@ -68,7 +68,7 @@ namespace RifaApi.Controllers
         {
             var numberSold = await _context.Numbers_Sold
                 .Include(ns => ns.Raffle)
-                .Include(ns => ns.UserId)
+                .Include(ns => ns.CustomerId)
                 .FirstOrDefaultAsync(ns => ns.Id == id);
 
             if (numberSold == null)
@@ -144,7 +144,7 @@ namespace RifaApi.Controllers
         public async Task<IActionResult> GetCompras()
         {
             var compras = await (from ns in _context.Numbers_Sold
-                                 join u in _context.Users on ns.UserId equals u.Id
+                                 join u in _context.Customers on ns.CustomerId equals u.Id
                                  join r in _context.Raffles on ns.RaffleId equals r.Id
                                  group ns by new
                                  {

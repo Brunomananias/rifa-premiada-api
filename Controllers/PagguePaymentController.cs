@@ -1,6 +1,9 @@
-﻿using API_Rifa.Models;
+﻿using API_Rifa.Data;
+using API_Rifa.Models;
 using API_Rifa.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace API_Rifa.Controllers
 {
@@ -9,11 +12,13 @@ namespace API_Rifa.Controllers
     public class PagguePaymentController : Controller
     {
             private readonly PagguePaymentService _pagguePaymentService;
+            private readonly AppDbContext _context;
 
             // Injeção de dependência do serviço que irá se comunicar com a API da Paggue
-            public PagguePaymentController(PagguePaymentService pagguePaymentService)
+            public PagguePaymentController(PagguePaymentService pagguePaymentService, AppDbContext context)
             {
                 _pagguePaymentService = pagguePaymentService;
+                _context = context;
             }
 
         [HttpPost("gerar-pix")]
@@ -47,12 +52,19 @@ namespace API_Rifa.Controllers
 
 
         [HttpGet("status/{paymentId}")]
-        public async Task<ActionResult<PaymentStatusResponse>> GetPaymentStatus(string paymentId)
+        public async Task<ActionResult<PaymentStatusResponse>> GetPaymentStatus(string paymentId, int rifaId)
         {
             try
             {
-                var status = await _pagguePaymentService.GetPaymentStatusAsync(paymentId);
-                return Ok(status); // Retorna o status do pagamento como resposta
+                var rifa = await _context.Raffles
+                    .FirstOrDefaultAsync(r => r.Id == rifaId);
+
+                if (rifa == null)
+                    return NotFound("Rifa não encontrada.");
+
+                var userId = rifa.user_id;
+                var status = await _pagguePaymentService.GetPaymentStatusAsync(paymentId, userId);
+                return Ok(status);
             }
             catch (Exception ex)
             {

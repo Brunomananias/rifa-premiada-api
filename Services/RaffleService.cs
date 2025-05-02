@@ -18,8 +18,8 @@ namespace API_Rifa.Services
             // Buscar as vendas de números e os compradores (join com users)
             var resultado = await _context.Numbers_Sold
                 .Where(ns => ns.RaffleId == idRifaEscolhido && ns.PaymentStatus == "Paid")
-                .Join(_context.Users,
-                      ns => ns.UserId,
+                .Join(_context.Customers,
+                      ns => ns.CustomerId,
                       u => u.Id,
                       (ns, u) => new { ns.Numbers, u.Name })
                 .ToListAsync();
