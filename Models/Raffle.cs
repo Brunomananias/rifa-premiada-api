@@ -14,6 +14,7 @@
         public int? DrawnNumber { get; set; }
         public int user_id { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public ICollection<NumberSold>? NumbersSold { get; set; }
     }
 
 }

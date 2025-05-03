@@ -1,0 +1,81 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\0e8ce50b-cee8-4d1e-be46-8975dcf49ddd.png",
+      "PackagePath": "staticwebassets\\assets\\images\\0e8ce50b-cee8-4d1e-be46-8975dcf49ddd.png"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\165ca0f5-8871-4b5b-97d9-201b14d4009c.png",
+      "PackagePath": "staticwebassets\\assets\\images\\165ca0f5-8871-4b5b-97d9-201b14d4009c.png"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\258dbbbf-2447-4667-ac9b-7c2b00b87fc4.jpeg",
+      "PackagePath": "staticwebassets\\assets\\images\\258dbbbf-2447-4667-ac9b-7c2b00b87fc4.jpeg"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\25c7ab4d-332c-46b7-8323-c8f90cf16ad6.jpeg",
+      "PackagePath": "staticwebassets\\assets\\images\\25c7ab4d-332c-46b7-8323-c8f90cf16ad6.jpeg"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\6459555c-dc05-44f2-82f6-5337c04a0e2f.jpeg",
+      "PackagePath": "staticwebassets\\assets\\images\\6459555c-dc05-44f2-82f6-5337c04a0e2f.jpeg"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\655bc6aa-978c-4c43-8570-91d661101483.jpeg",
+      "PackagePath": "staticwebassets\\assets\\images\\655bc6aa-978c-4c43-8570-91d661101483.jpeg"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\aa5fc01f-a60a-4064-b18a-2465804a16a7.png",
+      "PackagePath": "staticwebassets\\assets\\images\\aa5fc01f-a60a-4064-b18a-2465804a16a7.png"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\bc79e0f6-59fe-47f0-b8ee-f736e28255ae.png",
+      "PackagePath": "staticwebassets\\assets\\images\\bc79e0f6-59fe-47f0-b8ee-f736e28255ae.png"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\c9e17b5d-db04-4f19-a53a-cf8a399317df.png",
+      "PackagePath": "staticwebassets\\assets\\images\\c9e17b5d-db04-4f19-a53a-cf8a399317df.png"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\assets\\images\\eab36f45-b956-4af0-9253-bdb50c787e88.jpeg",
+      "PackagePath": "staticwebassets\\assets\\images\\eab36f45-b956-4af0-9253-bdb50c787e88.jpeg"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\images\\00c517f2-95f8-41af-90e3-c195d2221325.png",
+      "PackagePath": "staticwebassets\\images\\00c517f2-95f8-41af-90e3-c195d2221325.png"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\images\\6136a360-fb3e-4e5a-abc1-d133ffe683aa.png",
+      "PackagePath": "staticwebassets\\images\\6136a360-fb3e-4e5a-abc1-d133ffe683aa.png"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\images\\9c10d9a7-ef8e-4f5d-bb90-7debdc896eff.png",
+      "PackagePath": "staticwebassets\\images\\9c10d9a7-ef8e-4f5d-bb90-7debdc896eff.png"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\images\\c958fd43-2813-4a78-99db-d764a95cffea.jpeg",
+      "PackagePath": "staticwebassets\\images\\c958fd43-2813-4a78-99db-d764a95cffea.jpeg"
+    },
+    {
+      "Id": "D:\\Projetos\\site-rifa-api\\API_Rifa\\API_Rifa\\wwwroot\\images\\f2b7e02a-2268-4e9f-ba8a-599a0af0d457.jfif",
+      "PackagePath": "staticwebassets\\images\\f2b7e02a-2268-4e9f-ba8a-599a0af0d457.jfif"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.API_Rifa.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.build.API_Rifa.props",
+      "PackagePath": "build\\API_Rifa.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.API_Rifa.props",
+      "PackagePath": "buildMultiTargeting\\API_Rifa.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildTransitive.API_Rifa.props",
+      "PackagePath": "buildTransitive\\API_Rifa.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

@@ -33,6 +33,7 @@ namespace API_Rifa.Models
 
         [Column("UpdatedAt")]
         public DateTime? UpdatedAt { get; set; } // Nullable
+        public NumberSold? NumberSold { get; set; }
     }
 
 
@@ -53,7 +54,7 @@ namespace API_Rifa.Models
         public string? QrCodeUrl { get; set; }
 
         [Column("user_id")]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         [ForeignKey("UserId")]
         public User? User { get; set; }
@@ -64,6 +65,7 @@ namespace API_Rifa.Models
 
         [Column("UpdatedAt")]
         public DateTime? UpdatedAt { get; set; } // Nullable
+        public NumberSold NumberSold { get; set; }
     }
 
 

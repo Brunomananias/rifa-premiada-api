@@ -55,7 +55,10 @@ namespace RifaApi.Controllers
             try
             {
                 var customer = await _context.Customers.FirstOrDefaultAsync(u => u.Whatsapp == request.Customer.Whatsapp);
-
+                var userIdDono = await _context.Raffles
+                                   .Where(r => r.Id == request.RaffleId)
+                                   .Select(r => r.user_id)
+                                   .FirstOrDefaultAsync();
                 if (customer == null)
                 {
                     customer = new Customer
@@ -76,6 +79,7 @@ namespace RifaApi.Controllers
                         Numbers = request.Numbers,
                         RaffleId = request.RaffleId,
                         CustomerId = customer.Id,
+                        UserId = userIdDono,
                         PaymentStatus = "reserved",
                         Value = request.Price
                     };

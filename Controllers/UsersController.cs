@@ -183,6 +183,21 @@ namespace RifaApi.Controllers
             return Ok(new { newPlanId = user.Plan_id, newPlanName = plan?.Name });
         }
 
+        [HttpGet("test-db")]
+        public IActionResult TestDbConnection()
+        {
+            try
+            {
+                _context.Database.OpenConnection();
+                _context.Database.CloseConnection();
+                return Ok("Conexão com o banco de dados bem-sucedida");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro na conexão com o banco: {ex.Message}");
+            }
+        }
+
 
         public class UpdateUserPlanRequest
         {

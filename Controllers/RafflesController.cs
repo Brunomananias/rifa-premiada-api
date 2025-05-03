@@ -192,19 +192,43 @@ namespace RifaApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRaffle(int id)
         {
-            var raffle = await _context.Raffles.FindAsync(id);
-            if (raffle == null)
-                return NotFound();
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            // Deleta números vendidos primeiro
-            var numbers = _context.Numbers_Sold.Where(n => n.RaffleId == id);
-            _context.Numbers_Sold.RemoveRange(numbers);
+            try
+            {
+                // 1. Encontrar e deletar transações PIX relacionadas
+                var pixTransactions = await _context.Pix_Transactions
+                    .Include(p => p.NumberSold)
+                    .Where(p => p.NumberSold.RaffleId == id)
+                    .ToListAsync();
 
-            // Depois deleta a rifa
-            _context.Raffles.Remove(raffle);
-            await _context.SaveChangesAsync();
+                _context.Pix_Transactions.RemoveRange(pixTransactions);
 
-            return NoContent();
+                // 2. Deletar números vendidos
+                var numbersSold = await _context.Numbers_Sold
+                    .Where(n => n.RaffleId == id)
+                    .ToListAsync();
+
+                _context.Numbers_Sold.RemoveRange(numbersSold);
+
+                // 3. Deletar a rifa
+                var raffle = await _context.Raffles.FindAsync(id);
+                if (raffle == null)
+                    return NotFound();
+
+                _context.Raffles.Remove(raffle);
+
+                // 4. Executar todas as operações
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, "Não foi possível deletar a rifa");
+            }
         }
 
 
