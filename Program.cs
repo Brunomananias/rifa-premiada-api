@@ -58,5 +58,5 @@ app.UseStaticFiles();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5167"; // Porta local como fallback
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5163"; // Porta local como fallback
 app.Run($"http://0.0.0.0:{port}");
