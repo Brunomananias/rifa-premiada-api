@@ -1,8 +1,10 @@
 ﻿using API_Rifa.Data;
 using API_Rifa.Models;
 using API_Rifa.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace RifaApi.Controllers
 {
@@ -89,8 +91,21 @@ namespace RifaApi.Controllers
                     SoldNumbers = string.Join(",", _context.Numbers_Sold
                         .Where(n => n.RaffleId == r.Id && n.PaymentStatus == "paid")
                         .Select(n => n.Numbers)
-                        .ToList())
-                })
+                        .ToList()),
+                    Enabled_Ranking = r.Enabled_Ranking,
+                    Ranking_Message = r.Ranking_Message,
+                    Ranking_Quantity = r.Ranking_Quantity,
+                    Type_Ranking = r.Type_Ranking,
+                    DrawnNumber = r.DrawnNumber,
+                    WinnerName = r.WinnerId != null ? _context.Customers
+                    .Where(w => w.Id == r.WinnerId)
+                    .Select(w => w.Name)
+                    .FirstOrDefault() : null,
+                     WinnerPhone = r.WinnerId != null ? _context.Customers
+                    .Where(w => w.Id == r.WinnerId)
+                    .Select(w => w.Whatsapp)
+                    .FirstOrDefault() : null,
+                    })
                 .FirstOrDefaultAsync();
 
             if (raffle == null)
@@ -175,6 +190,10 @@ namespace RifaApi.Controllers
             existingRaffle.Start_Date = raffle.Start_Date;
             existingRaffle.End_Date = raffle.End_Date;
             existingRaffle.Image_Url = raffle.Image_Url;
+            existingRaffle.Enabled_Ranking = raffle.Enabled_Ranking;
+            existingRaffle.Ranking_Message = raffle.Ranking_Message;
+            existingRaffle.Ranking_Quantity = raffle.Ranking_Quantity;
+            existingRaffle.Type_Ranking = raffle.Type_Ranking;
             existingRaffle.UpdatedAt = DateTime.Now;
 
             try
@@ -240,12 +259,53 @@ namespace RifaApi.Controllers
         [HttpPost("{id}/sortear")]
         public async Task<IActionResult> SortearNumero(int id)
         {
-            var (numeroSorteado, nomeComprador) = await _raffleService.SortearNumeroAsync(id);
+            var raffle = await _context.Raffles
+                .FirstOrDefaultAsync(r => r.Id == id);
 
-            if (numeroSorteado == null)
-                return NotFound();
+            if (raffle == null)
+                return NotFound("Rifa não encontrada");
 
-            return Ok(new { numeroSorteado, nomeComprador });
+            if (raffle.DrawnNumber != null)
+                return BadRequest("Esta rifa já teve um número sorteado.");
+
+            var numerosParaSorteio = await _context.Numbers_Sold
+             .Where(n => n.RaffleId == id && n.PaymentStatus == "paid")
+             .ToListAsync();
+
+            var numerosValidos = numerosParaSorteio
+                .SelectMany(n => n.Numbers.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                         .Select(numero => new { Numero = numero.Trim(), n.CustomerId }))
+                .ToList();
+
+            if (!numerosValidos.Any())
+                return BadRequest("Nenhum número válido para sorteio encontrado.");
+
+            // Sortear aleatoriamente
+            var random = new Random();
+            var numeroSorteado = numerosValidos[random.Next(numerosValidos.Count)];
+
+            // Marcar como vencedor
+            raffle.WinnerId = numeroSorteado.CustomerId;
+            raffle.DrawnNumber = Convert.ToInt16(numeroSorteado.Numero);
+            raffle.DrawnAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            // Busca o Customer pelo ID (caso não esteja incluído)
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Id == numeroSorteado.CustomerId);
+
+            return Ok(new
+            {
+                numero = numeroSorteado.Numero,
+                ganhador = new
+                {
+                    id = customer?.Id,
+                    nome = customer != null ? $"{customer.Name}" : "Cliente não encontrado"
+                },
+                dataSorteio = raffle.DrawnAt
+            });
         }
+
     }
 }
