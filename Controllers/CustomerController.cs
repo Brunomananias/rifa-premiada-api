@@ -74,14 +74,14 @@ namespace API_Rifa.Controllers
         }
 
         [HttpGet("customers")]
-        public async Task<ActionResult<IEnumerable<object>>> GetCompradores()
+        public async Task<ActionResult<IEnumerable<object>>> GetCompradores(int userId)
         {
             var customers = await _context.Customers
                 .Include(c => c.NumbersSold)
                 .ToListAsync();
 
             var compradores = customers
-                .Where(c => c.NumbersSold.Any(ns => ns.PaymentStatus == "paid"))
+                .Where(c => c.NumbersSold.Any(ns => ns.PaymentStatus == "paid" && ns.UserId == userId))
                 .Select(c => new
                 {
                     c.Id,

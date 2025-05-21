@@ -26,7 +26,7 @@ namespace RifaApi.Controllers
         public async Task<ActionResult<IEnumerable<Raffle>>> GetRaffles(int idUsuarioLogado)
         {
             var raffles = await _context.Raffles
-                .Where(r => r.user_id == idUsuarioLogado)
+                .Where(r => r.User_id == idUsuarioLogado)
                 .Select(r => new Raffle
                 {
                     Id = r.Id,
@@ -49,7 +49,7 @@ namespace RifaApi.Controllers
 
         // GET: api/Raffles
         [HttpGet("all-raffles")]
-        public async Task<ActionResult<IEnumerable<Raffle>>> GetRaffles()
+        public async Task<ActionResult<IEnumerable<Raffle>>> GetAllRaffles(int userId)
         {
             var raffles = await _context.Raffles
                 .Select(r => new Raffle
@@ -63,10 +63,11 @@ namespace RifaApi.Controllers
                     End_Date = r.End_Date,
                     Image_Url = r.Image_Url,
                     SoldNumbers = string.Join(",", _context.Numbers_Sold
-                        .Where(n => n.RaffleId == r.Id && n.PaymentStatus == "paid")
+                        .Where(n => n.RaffleId == r.Id && n.PaymentStatus == "paid" && n.UserId == userId)
                         .Select(n => n.Numbers)
                         .ToList())
                 })
+                .Where(x => x.User_id == userId)
                 .ToListAsync();
 
             return raffles;

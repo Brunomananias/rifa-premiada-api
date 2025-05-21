@@ -25,10 +25,10 @@ namespace RifaApi.Controllers
         }
 
         [HttpGet("quantity-purchases")]
-        public async Task<long> GetQuantityPurchases()
+        public async Task<long> GetQuantityPurchases(int userId)
         {
             var totalPaid = await _context.Numbers_Sold
-                .Where(x => x.PaymentStatus == "paid")
+                .Where(x => x.PaymentStatus == "paid" && x.UserId == userId)
                 .CountAsync();
             return totalPaid;
         }
@@ -141,7 +141,7 @@ namespace RifaApi.Controllers
         }
 
         [HttpGet("compras")]
-        public async Task<IActionResult> GetCompras()
+        public async Task<IActionResult> GetCompras(int userId)
         {
             var compras = await (from ns in _context.Numbers_Sold
                                  join u in _context.Customers on ns.CustomerId equals u.Id
@@ -150,6 +150,7 @@ namespace RifaApi.Controllers
                                  {
                                      ns.Id,
                                      ns.CreatedAt,
+                                     ns.UserId,
                                      r.Title,
                                      u.Name,
                                      u.Whatsapp,
@@ -158,6 +159,7 @@ namespace RifaApi.Controllers
                                  } into g
                                  select new
                                  {
+                                     user_id = g.Key.UserId,
                                      compra_id = g.Key.Id,
                                      dataUpdated = g.Key.CreatedAt,
                                      nome_rifa = g.Key.Title,
@@ -166,7 +168,9 @@ namespace RifaApi.Controllers
                                      quantidade_numbers = g.Count(),
                                      totalprice = (g.Count() * g.Key.Value).ToString("F2"),
                                      payment_status = g.Key.PaymentStatus
-                                 }).OrderByDescending(c => c.dataUpdated).ToListAsync();
+                                 }).OrderByDescending(c => c.dataUpdated)
+                                 .Where(ns => ns.user_id == userId)
+                                 .ToListAsync();
 
             return Ok(compras);
         }

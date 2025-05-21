@@ -14,7 +14,7 @@ namespace API_Rifa.Models
         public string Image_Url { get; set; }
         public string? SoldNumbers { get; set; }
         public int? DrawnNumber { get; set; }
-        public int user_id { get; set; }
+        public int User_id { get; set; }
         public DateTime? UpdatedAt { get; set; }
         [Column("winner_id")]
         public int? WinnerId { get; set; }

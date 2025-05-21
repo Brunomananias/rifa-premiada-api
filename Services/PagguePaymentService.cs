@@ -39,9 +39,9 @@ namespace API_Rifa.Services
             var raffle = await _context.Raffles
                 .FirstOrDefaultAsync(r => r.Id == request.raffleId);
             var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-            var companyId = await GetCompanyIdAsync(raffle.user_id);
+            var companyId = await GetCompanyIdAsync(raffle.User_id);
             // Definindo o cabeçalho de autenticação
-            var token = await _tokenService.ObterTokenAsync(raffle.user_id);
+            var token = await _tokenService.ObterTokenAsync(raffle.User_id);
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             _httpClient.DefaultRequestHeaders.Add("x-company-id", companyId);
             var response = await _httpClient.PostAsync(url, content);

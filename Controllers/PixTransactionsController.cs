@@ -57,7 +57,7 @@ namespace RifaApi.Controllers
                 var customer = await _context.Customers.FirstOrDefaultAsync(u => u.Whatsapp == request.Customer.Whatsapp);
                 var userIdDono = await _context.Raffles
                                    .Where(r => r.Id == request.RaffleId)
-                                   .Select(r => r.user_id)
+                                   .Select(r => r.User_id)
                                    .FirstOrDefaultAsync();
                 if (customer == null)
                 {

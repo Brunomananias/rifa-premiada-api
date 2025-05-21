@@ -62,7 +62,7 @@ namespace API_Rifa.Controllers
                 if (rifa == null)
                     return NotFound("Rifa não encontrada.");
 
-                var userId = rifa.user_id;
+                var userId = rifa.User_id;
                 var status = await _pagguePaymentService.GetPaymentStatusAsync(paymentId, userId);
                 return Ok(status);
             }
