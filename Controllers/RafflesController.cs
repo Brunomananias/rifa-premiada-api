@@ -1,6 +1,7 @@
 ﻿using API_Rifa.Data;
 using API_Rifa.Models;
 using API_Rifa.Services;
+using MercadoPago.Resource.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -68,6 +69,31 @@ namespace RifaApi.Controllers
                         .ToList())
                 })
                 .Where(x => x.User_id == userId)
+                .ToListAsync();
+
+            return raffles;
+        }
+
+        // GET: api/Raffles
+        [HttpGet("rifas-publicas")]
+        public async Task<ActionResult<IEnumerable<Raffle>>> BuscarTodasRifas()
+        {
+            var raffles = await _context.Raffles
+                .Select(r => new Raffle
+                {
+                    Id = r.Id,
+                    Title = r.Title,
+                    Description = r.Description,
+                    Price = r.Price,
+                    Total_Numbers = r.Total_Numbers,
+                    Start_Date = r.Start_Date,
+                    End_Date = r.End_Date,
+                    Image_Url = r.Image_Url,
+                    SoldNumbers = string.Join(",", _context.Numbers_Sold
+                        .Where(n => n.RaffleId == r.Id && n.PaymentStatus == "paid")
+                        .Select(n => n.Numbers)
+                    .ToList())
+                })
                 .ToListAsync();
 
             return raffles;
